@@ -9,6 +9,10 @@ from backend.utils.security import hash_password, verify_password
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 
+def to_user_out(user: User) -> UserOut:
+    return UserOut(id=user.id, name=user.name, email=user.email, role=user.role)
+
+
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def register(payload: UserRegister, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == payload.email).first()
@@ -24,7 +28,7 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
-    return user
+    return to_user_out(user)
 
 
 @router.post("/login", response_model=UserOut)
@@ -36,4 +40,4 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
             detail="Invalid email or password",
         )
 
-    return user
+    return to_user_out(user)
