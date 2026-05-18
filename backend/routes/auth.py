@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 
 def user_to_response(user: User) -> UserOut:
-    return UserOut(id=user.id, name=user.name, email=user.email, role=user.role)
+    return UserOut.model_validate(user)
 
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
