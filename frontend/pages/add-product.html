@@ -8,25 +8,26 @@
   <link href="../css/styles.css" rel="stylesheet">
 </head>
 <body>
-<div class="container py-4">
+<div class="container py-4 product-page">
   <div class="row justify-content-center">
     <div class="col-md-8">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Add Product</h2>
+        <h2 class="mb-0 page-title">Add Product</h2>
         <div class="d-flex align-items-center gap-2">
           <span id="sessionUser" class="text-muted"></span>
           <button class="btn btn-outline-dark btn-sm" onclick="logout()">Logout</button>
         </div>
       </div>
-      <form id="productForm" class="card card-body">
+      <form id="productForm" class="card card-body product-form-card">
+        <div id="formFeedback" class="alert d-none" role="alert" aria-live="polite"></div>
         <div class="row g-3">
-          <div class="col-md-6"><input id="name" class="form-control" placeholder="Name" required></div>
-          <div class="col-md-6"><input id="category" class="form-control" placeholder="Category" required></div>
+          <div class="col-md-6"><input id="name" class="form-control" placeholder="Name" minlength="2" maxlength="120" required></div>
+          <div class="col-md-6"><input id="category" class="form-control" placeholder="Category" minlength="2" maxlength="100" required></div>
           <div class="col-md-4"><input id="quantity" type="number" min="0" class="form-control" placeholder="Quantity" required></div>
           <div class="col-md-4"><input id="price" type="number" min="0.01" step="0.01" class="form-control" placeholder="Price" required></div>
           <div class="col-md-4"><input id="supplier_id" type="number" min="1" class="form-control" placeholder="Supplier ID" required></div>
         </div>
-        <button class="btn btn-dark mt-3" type="submit">Save Product</button>
+        <button id="submitProductBtn" class="btn btn-dark mt-3" type="submit">Save Product</button>
       </form>
     </div>
   </div>
@@ -34,23 +35,81 @@
 <script src="../js/api.js"></script>
 <script>
   setupPage("products", { allowedRoles: ["admin"] });
+  const productForm = document.getElementById("productForm");
+  const feedback = document.getElementById("formFeedback");
+  const submitButton = document.getElementById("submitProductBtn");
+  const nameInput = document.getElementById("name");
+  const categoryInput = document.getElementById("category");
+  const quantityInput = document.getElementById("quantity");
+  const priceInput = document.getElementById("price");
+  const supplierIdInput = document.getElementById("supplier_id");
 
-  document.getElementById("productForm").addEventListener("submit", async (e) => {
+  function setFeedback(type, messages) {
+    feedback.className = `alert ${type === "success" ? "alert-success" : "alert-danger"} form-feedback`;
+    feedback.innerHTML = Array.isArray(messages)
+      ? `<ul class="mb-0 ps-3">${messages.map((message) => `<li>${message}</li>`).join("")}</ul>`
+      : messages;
+  }
+
+  function clearFeedback() {
+    feedback.className = "alert d-none";
+    feedback.textContent = "";
+  }
+
+  function validateProductForm() {
+    const validationErrors = [];
+    const name = nameInput.value.trim();
+    const category = categoryInput.value.trim();
+    const quantity = Number(quantityInput.value);
+    const price = Number(priceInput.value);
+    const supplierId = Number(supplierIdInput.value);
+
+    if (name.length < 2) validationErrors.push("Name must be at least 2 characters.");
+    if (category.length < 2) validationErrors.push("Category must be at least 2 characters.");
+    if (!Number.isInteger(quantity) || quantity < 0) validationErrors.push("Quantity must be 0 or greater.");
+    if (!Number.isFinite(price) || price <= 0) validationErrors.push("Price must be greater than 0.");
+    if (!Number.isInteger(supplierId) || supplierId <= 0) validationErrors.push("Supplier ID must be a valid positive number.");
+
+    return {
+      validationErrors,
+      payload: {
+        name,
+        category,
+        quantity,
+        price,
+        supplier_id: supplierId,
+      },
+    };
+  }
+
+  productForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    clearFeedback();
+
+    const { validationErrors, payload } = validateProductForm();
+    if (validationErrors.length) {
+      setFeedback("error", validationErrors);
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Saving...";
+
     try {
       await apiRequest("/api/products", {
         method: "POST",
-        body: JSON.stringify({
-          name: name.value,
-          category: category.value,
-          quantity: Number(quantity.value),
-          price: Number(price.value),
-          supplier_id: Number(supplier_id.value),
-        }),
+        body: JSON.stringify(payload),
       });
-      window.location.href = "products.html";
+      setFeedback("success", "Product created successfully. Redirecting to product list...");
+      setTimeout(() => {
+        window.location.href = "products.html";
+      }, 500);
     } catch (err) {
-      alert(err.message);
+      const errorMessages = Array.isArray(err.messages) ? err.messages : [err.message || "Unable to create product."];
+      setFeedback("error", errorMessages);
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = "Save Product";
     }
   });
 </script>

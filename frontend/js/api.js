@@ -30,6 +30,28 @@ function getAuthHeaders() {
   return { Authorization: `Basic ${encoded}` };
 }
 
+function flattenErrorDetails(detail) {
+  if (!detail) return ["Request failed"];
+  if (typeof detail === "string") return [detail];
+  if (Array.isArray(detail)) {
+    return detail.flatMap((item) => flattenErrorDetails(item));
+  }
+  if (typeof detail === "object") {
+    if (Array.isArray(detail.errors)) {
+      return detail.errors.flatMap((item) => flattenErrorDetails(item));
+    }
+    const location = Array.isArray(detail.loc) ? detail.loc.filter((part) => part !== "body").join(".") : "";
+    const message = typeof detail.msg === "string" ? detail.msg : "";
+    if (location || message) {
+      return [`${location ? `${location}: ` : ""}${message || "Invalid value"}`];
+    }
+    if (typeof detail.detail === "string") {
+      return [detail.detail];
+    }
+  }
+  return ["Request failed"];
+}
+
 async function apiRequest(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
     headers: {
@@ -42,7 +64,11 @@ async function apiRequest(path, options = {}) {
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.detail || "Request failed");
+    const messages = flattenErrorDetails(data.detail);
+    const error = new Error(messages.join("\n"));
+    error.messages = messages;
+    error.status = response.status;
+    throw error;
   }
   return data;
 }

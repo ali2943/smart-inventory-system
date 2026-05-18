@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from backend.database.connection import get_db
@@ -43,11 +44,24 @@ def create_product(
     if not supplier:
         raise HTTPException(status_code=404, detail="Supplier not found")
 
-    product = Product(**payload.model_dump())
-    db.add(product)
-    db.commit()
-    db.refresh(product)
-    return product
+    try:
+        product = Product(**payload.model_dump())
+        db.add(product)
+        db.commit()
+        db.refresh(product)
+        return product
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to create product due to invalid related data. Please verify supplier and product details.",
+        ) from exc
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to create product right now. Please try again.",
+        ) from exc
 
 
 @router.put("/{product_id}", response_model=ProductOut)
