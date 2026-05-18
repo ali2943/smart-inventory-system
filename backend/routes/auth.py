@@ -9,7 +9,7 @@ from backend.utils.security import hash_password, verify_password
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 
-def create_safe_user_response(user: User) -> UserOut:
+def user_to_response(user: User) -> UserOut:
     return UserOut(id=user.id, name=user.name, email=user.email, role=user.role)
 
 
@@ -28,7 +28,7 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
-    return create_safe_user_response(user)
+    return user_to_response(user)
 
 
 @router.post("/login", response_model=UserOut)
@@ -40,4 +40,4 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
             detail="Invalid email or password",
         )
 
-    return create_safe_user_response(user)
+    return user_to_response(user)
