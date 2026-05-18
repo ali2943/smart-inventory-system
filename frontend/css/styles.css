@@ -190,6 +190,52 @@ main h3 {
   background: #f8d7da;
 }
 
+.alert-success {
+  color: #0f5132;
+  background: #d1e7dd;
+}
+
+.product-page .page-title {
+  color: #111827;
+  letter-spacing: 0.01em;
+}
+
+.product-form-card {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.08);
+  animation: fadeUp 0.45s ease both;
+}
+
+.form-feedback {
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+}
+
+.product-form-card .btn-dark {
+  background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.product-form-card .btn-dark:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.product-search {
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+.product-table-wrap {
+  border: 1px solid #e5e7eb;
+  background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+}
+
+.product-table tbody tr {
+  animation: fadeUp 0.3s ease both;
+}
+
 .d-none { display: none !important; }
 
 main > * {

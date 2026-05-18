@@ -124,6 +124,40 @@ class TestSIMSAPI(unittest.TestCase):
         )
         self.assertEqual(product.status_code, 403)
 
+    def test_create_product_returns_clear_error_for_missing_supplier(self):
+        response = self.client.post(
+            "/api/products",
+            headers=self.basic_auth_header(self.admin_username, self.password),
+            json={
+                "name": "Desk Lamp",
+                "category": "Office",
+                "quantity": 4,
+                "price": 15.5,
+                "supplier_id": 999999,
+            },
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()["detail"], "Supplier not found")
+
+    def test_create_product_validation_errors_are_human_readable(self):
+        response = self.client.post(
+            "/api/products",
+            headers=self.basic_auth_header(self.admin_username, self.password),
+            json={
+                "name": "  ",
+                "category": "A",
+                "quantity": -1,
+                "price": 0,
+                "supplier_id": 0,
+            },
+        )
+        self.assertEqual(response.status_code, 422)
+        details = response.json()["detail"]
+        self.assertIsInstance(details, list)
+        self.assertTrue(any("name" in message for message in details))
+        self.assertTrue(any("category" in message for message in details))
+        self.assertTrue(any("quantity" in message for message in details))
+
 
 if __name__ == "__main__":
     unittest.main()

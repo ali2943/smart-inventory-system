@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class UserRegister(BaseModel):
@@ -50,6 +50,14 @@ class ProductBase(BaseModel):
     quantity: int = Field(ge=0)
     price: float = Field(gt=0)
     supplier_id: int = Field(gt=0)
+
+    @field_validator("name", "category")
+    @classmethod
+    def normalize_non_empty_text(cls, value: str) -> str:
+        normalized = value.strip()
+        if len(normalized) < 2:
+            raise ValueError("must be at least 2 non-space characters")
+        return normalized
 
 
 class ProductCreate(ProductBase):
