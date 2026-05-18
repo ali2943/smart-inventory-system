@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.database.connection import get_db
-from backend.dependencies.auth import get_current_user
-from backend.models.entities import Product, User
+from backend.models.entities import Product
 from backend.models.schemas import ProductOut, QuantityUpdate, StockAdjustment
 
 router = APIRouter(prefix="/api/inventory", tags=["Inventory"])
@@ -14,7 +13,6 @@ def stock_in(
     product_id: int,
     payload: StockAdjustment,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
@@ -30,7 +28,6 @@ def stock_out(
     product_id: int,
     payload: StockAdjustment,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
@@ -48,7 +45,6 @@ def update_quantity(
     product_id: int,
     payload: QuantityUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
@@ -63,6 +59,5 @@ def update_quantity(
 def low_stock(
     threshold: int = 5,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     return db.query(Product).filter(Product.quantity <= threshold).order_by(Product.quantity.asc()).all()

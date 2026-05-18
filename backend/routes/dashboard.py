@@ -3,8 +3,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from backend.database.connection import get_db
-from backend.dependencies.auth import get_current_user
-from backend.models.entities import Product, Sale, Supplier, User
+from backend.models.entities import Product, Sale, Supplier
 
 router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 
@@ -13,7 +12,6 @@ router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 def dashboard_summary(
     low_stock_threshold: int = 5,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     total_products = db.query(func.count(Product.id)).scalar() or 0
     total_sales = db.query(func.coalesce(func.sum(Sale.total_price), 0)).scalar() or 0

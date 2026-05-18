@@ -2,15 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.database.connection import get_db
-from backend.dependencies.auth import get_current_user, require_admin
-from backend.models.entities import Supplier, User
+from backend.models.entities import Supplier
 from backend.models.schemas import SupplierCreate, SupplierOut, SupplierUpdate
 
 router = APIRouter(prefix="/api/suppliers", tags=["Suppliers"])
 
 
 @router.get("", response_model=list[SupplierOut])
-def list_suppliers(db: Session = Depends(get_db), _: User = Depends(get_current_user)):
+def list_suppliers(db: Session = Depends(get_db)):
     return db.query(Supplier).order_by(Supplier.id.desc()).all()
 
 
@@ -18,7 +17,6 @@ def list_suppliers(db: Session = Depends(get_db), _: User = Depends(get_current_
 def create_supplier(
     payload: SupplierCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     supplier = Supplier(**payload.model_dump())
     db.add(supplier)
@@ -32,7 +30,6 @@ def update_supplier(
     supplier_id: int,
     payload: SupplierUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
     if not supplier:
@@ -50,7 +47,6 @@ def update_supplier(
 def delete_supplier(
     supplier_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
     if not supplier:

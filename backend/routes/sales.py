@@ -2,15 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from backend.database.connection import get_db
-from backend.dependencies.auth import get_current_user
-from backend.models.entities import Product, Sale, User
+from backend.models.entities import Product, Sale
 from backend.models.schemas import SaleCreate, SaleOut
 
 router = APIRouter(prefix="/api/sales", tags=["Sales"])
 
 
 @router.get("", response_model=list[SaleOut])
-def list_sales(db: Session = Depends(get_db), _: User = Depends(get_current_user)):
+def list_sales(db: Session = Depends(get_db)):
     return db.query(Sale).order_by(Sale.created_at.desc()).all()
 
 
@@ -18,7 +17,6 @@ def list_sales(db: Session = Depends(get_db), _: User = Depends(get_current_user
 def create_sale(
     payload: SaleCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     product = db.query(Product).filter(Product.id == payload.product_id).first()
     if not product:

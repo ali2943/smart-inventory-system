@@ -2,7 +2,6 @@ import os
 import unittest
 
 os.environ["DATABASE_URL"] = "sqlite:///./test_sims.db"
-os.environ["SECRET_KEY"] = "test-secret"
 
 from fastapi.testclient import TestClient
 
@@ -26,16 +25,9 @@ class TestSIMSAPI(unittest.TestCase):
             },
         )
 
-        login = cls.client.post(
-            "/api/auth/login", json={"email": cls.email, "password": cls.password}
-        )
-        cls.token = login.json()["access_token"]
-        cls.headers = {"Authorization": f"Bearer {cls.token}"}
-
     def test_supplier_product_and_sale_flow(self):
         supplier = self.client.post(
             "/api/suppliers",
-            headers=self.headers,
             json={
                 "supplier_name": "Main Supplier",
                 "phone": "12345678",
@@ -48,7 +40,6 @@ class TestSIMSAPI(unittest.TestCase):
 
         product = self.client.post(
             "/api/products",
-            headers=self.headers,
             json={
                 "name": "Laptop",
                 "category": "Electronics",
@@ -62,15 +53,23 @@ class TestSIMSAPI(unittest.TestCase):
 
         sale = self.client.post(
             "/api/sales",
-            headers=self.headers,
             json={"product_id": product_id, "quantity": 2},
         )
         self.assertEqual(sale.status_code, 201)
         self.assertEqual(sale.json()["total_price"], 2000.0)
 
-        updated = self.client.get(f"/api/products/{product_id}", headers=self.headers)
+        updated = self.client.get(f"/api/products/{product_id}")
         self.assertEqual(updated.status_code, 200)
         self.assertEqual(updated.json()["quantity"], 3)
+
+    def test_login_returns_user_profile_without_token(self):
+        login = self.client.post(
+            "/api/auth/login", json={"email": self.email, "password": self.password}
+        )
+        self.assertEqual(login.status_code, 200)
+        body = login.json()
+        self.assertEqual(body["email"], self.email)
+        self.assertNotIn("access_token", body)
 
 
 if __name__ == "__main__":
