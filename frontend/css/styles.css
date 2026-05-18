@@ -168,7 +168,7 @@ main h3 {
 }
 
 .table-striped tbody tr {
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .table-striped tbody tr:hover {
