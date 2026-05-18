@@ -43,7 +43,7 @@ smart-inventory-system/
 pip install -r requirements.txt
 ```
 
-3. Configure environment variables:
+3. Configure required environment variables:
 
 ```bash
 export DATABASE_URL='mysql+pymysql://root:password@localhost:3306/sims'

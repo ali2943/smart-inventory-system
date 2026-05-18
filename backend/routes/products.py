@@ -65,7 +65,7 @@ def update_product(
     if not supplier:
         raise HTTPException(status_code=404, detail="Supplier not found")
 
-    for key, value in payload.model_dump().items():
+    for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(product, key, value)
 
     db.commit()

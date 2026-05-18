@@ -1,9 +1,16 @@
 import os
+import warnings
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key")
+if SECRET_KEY == "change-this-secret-key":
+    warnings.warn(
+        "Using default SECRET_KEY; set SECRET_KEY environment variable in production.",
+        RuntimeWarning,
+        stacklevel=2,
+    )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 

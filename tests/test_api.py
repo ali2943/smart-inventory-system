@@ -32,7 +32,7 @@ class TestSIMSAPI(unittest.TestCase):
         cls.token = login.json()["access_token"]
         cls.headers = {"Authorization": f"Bearer {cls.token}"}
 
-    def test_supplier_product_and_sale_flow(self):
+    def test_create_supplier_product_and_sale_updates_inventory(self):
         supplier = self.client.post(
             "/api/suppliers",
             headers=self.headers,
