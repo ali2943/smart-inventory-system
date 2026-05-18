@@ -24,11 +24,6 @@ class UserOut(BaseModel):
     role: str
 
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
 class SupplierBase(BaseModel):
     supplier_name: str = Field(min_length=2, max_length=120)
     phone: str = Field(min_length=6, max_length=20)

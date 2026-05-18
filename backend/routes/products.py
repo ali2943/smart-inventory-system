@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.database.connection import get_db
-from backend.dependencies.auth import get_current_user, require_admin
-from backend.models.entities import Product, Supplier, User
+from backend.models.entities import Product, Supplier
 from backend.models.schemas import ProductCreate, ProductOut, ProductUpdate
 
 router = APIRouter(prefix="/api/products", tags=["Products"])
@@ -13,7 +12,6 @@ router = APIRouter(prefix="/api/products", tags=["Products"])
 def list_products(
     search: str | None = None,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     query = db.query(Product)
     if search:
@@ -25,7 +23,6 @@ def list_products(
 def get_product(
     product_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
@@ -37,7 +34,6 @@ def get_product(
 def create_product(
     payload: ProductCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     supplier = db.query(Supplier).filter(Supplier.id == payload.supplier_id).first()
     if not supplier:
@@ -55,7 +51,6 @@ def update_product(
     product_id: int,
     payload: ProductUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
@@ -77,7 +72,6 @@ def update_product(
 def delete_product(
     product_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:

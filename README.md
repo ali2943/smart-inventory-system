@@ -25,8 +25,8 @@ smart-inventory-system/
 
 ## Features
 
-- JWT authentication (register, login, profile)
-- Roles: `admin`, `employee`
+- No-login API usage for dashboard, inventory, products, suppliers, and sales
+- Optional user accounts (register, login validation, profile lookup)
 - Dashboard summary cards data API
 - Product CRUD + search
 - Inventory management (stock in/out, quantity update, low stock alert)
@@ -47,8 +47,6 @@ pip install -r requirements.txt
 
 ```bash
 export DATABASE_URL='mysql+pymysql://root:password@localhost:3306/sims'
-export SECRET_KEY='your-very-strong-secret'
-export ACCESS_TOKEN_EXPIRE_MINUTES='60'
 ```
 
 4. Initialize database tables:
@@ -69,7 +67,7 @@ uvicorn backend.main:app --reload
 ### Auth
 - `POST /api/auth/register`
 - `POST /api/auth/login`
-- `GET /api/auth/profile`
+- `GET /api/auth/profile?email=user@example.com`
 
 ### Products
 - `GET /api/products`
@@ -101,7 +99,7 @@ uvicorn backend.main:app --reload
 
 Open files under `frontend/pages` in a browser (or serve statically):
 
-- `login.html`
+- `login.html` (welcome/start page, no token required)
 - `dashboard.html`
 - `products.html`
 - `add-product.html`
