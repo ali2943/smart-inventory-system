@@ -4,18 +4,23 @@ from sqlalchemy.orm import Session
 from backend.database.connection import get_db
 from backend.models.entities import Supplier
 from backend.models.schemas import SupplierCreate, SupplierOut, SupplierUpdate
+from backend.utils.auth import require_roles
 
 router = APIRouter(prefix="/api/suppliers", tags=["Suppliers"])
 
 
 @router.get("", response_model=list[SupplierOut])
-def list_suppliers(db: Session = Depends(get_db)):
+def list_suppliers(
+    _=Depends(require_roles("admin", "employee")),
+    db: Session = Depends(get_db),
+):
     return db.query(Supplier).order_by(Supplier.id.desc()).all()
 
 
 @router.post("", response_model=SupplierOut)
 def create_supplier(
     payload: SupplierCreate,
+    _=Depends(require_roles("admin")),
     db: Session = Depends(get_db),
 ):
     supplier = Supplier(**payload.model_dump())
@@ -29,6 +34,7 @@ def create_supplier(
 def update_supplier(
     supplier_id: int,
     payload: SupplierUpdate,
+    _=Depends(require_roles("admin")),
     db: Session = Depends(get_db),
 ):
     supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
@@ -46,6 +52,7 @@ def update_supplier(
 @router.delete("/{supplier_id}")
 def delete_supplier(
     supplier_id: int,
+    _=Depends(require_roles("admin")),
     db: Session = Depends(get_db),
 ):
     supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()

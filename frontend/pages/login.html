@@ -14,17 +14,103 @@
       <div class="card shadow-sm">
         <div class="card-body p-4">
           <h3 class="mb-3 text-center">Smart Inventory Management System</h3>
-          <p class="text-muted text-center mb-4">
-            Authentication is not required. Open any page directly to use the app.
-          </p>
-          <div class="d-grid gap-2">
-            <a class="btn btn-dark" href="dashboard.html">Open Dashboard</a>
-            <a class="btn btn-outline-dark" href="products.html">Open Products</a>
+          <p class="text-muted text-center mb-4">Choose your role, then log in or create an account.</p>
+          <div class="mb-3">
+            <label class="form-label">Enter as</label>
+            <div class="d-flex gap-2">
+              <button class="btn btn-dark flex-fill" id="roleAdmin" type="button">Admin</button>
+              <button class="btn btn-outline-dark flex-fill" id="roleEmployee" type="button">Employee</button>
+            </div>
+          </div>
+          <form id="authForm" class="mb-2">
+            <div class="mb-2">
+              <label class="form-label">Username</label>
+              <input id="username" class="form-control" required minlength="3">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Password</label>
+              <input id="password" class="form-control" type="password" required minlength="8">
+            </div>
+            <button class="btn btn-dark w-100" id="submitBtn" type="submit">Login</button>
+          </form>
+          <div class="text-center">
+            <button class="btn btn-link p-0" id="switchMode" type="button">Need an account? Register</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+<script src="../js/api.js"></script>
+<script>
+  if (getSession()) {
+    window.location.href = "dashboard.html";
+  }
+
+  let mode = "login";
+  let selectedRole = "admin";
+  const roleAdmin = document.getElementById("roleAdmin");
+  const roleEmployee = document.getElementById("roleEmployee");
+  const switchMode = document.getElementById("switchMode");
+  const submitBtn = document.getElementById("submitBtn");
+
+  function renderRole() {
+    roleAdmin.classList.toggle("btn-dark", selectedRole === "admin");
+    roleAdmin.classList.toggle("btn-outline-dark", selectedRole !== "admin");
+    roleEmployee.classList.toggle("btn-dark", selectedRole === "employee");
+    roleEmployee.classList.toggle("btn-outline-dark", selectedRole !== "employee");
+  }
+
+  function renderMode() {
+    submitBtn.textContent = mode === "login" ? "Login" : "Create account";
+    switchMode.textContent =
+      mode === "login" ? "Need an account? Register" : "Already have an account? Login";
+  }
+
+  roleAdmin.addEventListener("click", () => {
+    selectedRole = "admin";
+    renderRole();
+  });
+  roleEmployee.addEventListener("click", () => {
+    selectedRole = "employee";
+    renderRole();
+  });
+  switchMode.addEventListener("click", () => {
+    mode = mode === "login" ? "register" : "login";
+    renderMode();
+  });
+
+  document.getElementById("authForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    if (!username || !password) return;
+
+    try {
+      if (mode === "register") {
+        await apiRequest("/api/auth/register", {
+          method: "POST",
+          body: JSON.stringify({ username, password, role: selectedRole }),
+        });
+      }
+      const user = await apiRequest("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ username, password, role: selectedRole }),
+      });
+
+      saveSession({
+        username,
+        password,
+        role: user.role,
+      });
+      window.location.href = "dashboard.html";
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+
+  renderRole();
+  renderMode();
+</script>
 </body>
 </html>
