@@ -37,11 +37,3 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
         )
 
     return user
-
-
-@router.get("/profile", response_model=UserOut)
-def profile(email: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user

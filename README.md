@@ -26,7 +26,7 @@ smart-inventory-system/
 ## Features
 
 - No-login API usage for dashboard, inventory, products, suppliers, and sales
-- Optional user accounts (register, login validation, profile lookup)
+- Optional user accounts (register and login validation)
 - Dashboard summary cards data API
 - Product CRUD + search
 - Inventory management (stock in/out, quantity update, low stock alert)
@@ -67,7 +67,6 @@ uvicorn backend.main:app --reload
 ### Auth
 - `POST /api/auth/register`
 - `POST /api/auth/login`
-- `GET /api/auth/profile?email=user@example.com`
 
 ### Products
 - `GET /api/products`
