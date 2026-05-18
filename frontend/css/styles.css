@@ -120,8 +120,6 @@ main h3 {
 .form-control:focus {
   border-color: #6366f1;
   box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.15);
-  outline: 2px solid transparent;
-  outline-offset: 2px;
 }
 
 .btn {
@@ -220,7 +218,7 @@ main > *:nth-child(5) { animation-delay: 0.24s; }
   *::before,
   *::after {
     animation: none !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0s !important;
     scroll-behavior: auto !important;
   }
 }
