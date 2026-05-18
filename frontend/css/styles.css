@@ -128,7 +128,7 @@ main h3 {
   padding: 0.55rem 0.85rem;
   cursor: pointer;
   font-weight: 600;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn-dark {
@@ -139,7 +139,6 @@ main h3 {
 .btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 16px rgba(15, 23, 42, 0.15);
-  filter: brightness(1.02);
 }
 
 .table {
@@ -218,7 +217,7 @@ main > *:nth-child(5) { animation-delay: 0.24s; }
   *::before,
   *::after {
     animation: none !important;
-    transition-duration: 0s !important;
+    transition: none !important;
     scroll-behavior: auto !important;
   }
 }
