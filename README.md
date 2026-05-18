@@ -25,12 +25,12 @@ smart-inventory-system/
 
 ## Features
 
-- No-login API usage for dashboard, inventory, products, suppliers, and sales
-- Optional user accounts (register and login validation)
+- Required account login/registration with `username` + `password`
+- Role-based access for `admin` and `employee`
 - Dashboard summary cards data API
-- Product CRUD + search
+- Product CRUD + search (full CRUD for admin)
 - Inventory management (stock in/out, quantity update, low stock alert)
-- Supplier CRUD
+- Seller (supplier) management (admin full CRUD, employee read-only)
 - Sales create + history + total price calculation
 - Responsive Bootstrap pages with sidebar navigation
 
@@ -68,6 +68,8 @@ uvicorn backend.main:app --reload
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 
+All non-auth APIs require HTTP Basic auth credentials for a registered account.
+
 ### Products
 - `GET /api/products`
 - `GET /api/products/{id}`
@@ -75,7 +77,7 @@ uvicorn backend.main:app --reload
 - `PUT /api/products/{id}`
 - `DELETE /api/products/{id}`
 
-### Suppliers
+### Suppliers (Sellers)
 - `GET /api/suppliers`
 - `POST /api/suppliers`
 - `PUT /api/suppliers/{id}`
@@ -98,7 +100,7 @@ uvicorn backend.main:app --reload
 
 Open files under `frontend/pages` in a browser (or serve statically):
 
-- `login.html` (welcome/start page, no token required)
+- `login.html` (choose role, then login/register with username and password)
 - `dashboard.html`
 - `products.html`
 - `add-product.html`

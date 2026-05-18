@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from backend.database.connection import get_db
 from backend.models.entities import Product, Supplier
 from backend.models.schemas import ProductCreate, ProductOut, ProductUpdate
+from backend.utils.auth import require_roles
 
 router = APIRouter(prefix="/api/products", tags=["Products"])
 
@@ -11,6 +12,7 @@ router = APIRouter(prefix="/api/products", tags=["Products"])
 @router.get("", response_model=list[ProductOut])
 def list_products(
     search: str | None = None,
+    _=Depends(require_roles("admin", "employee")),
     db: Session = Depends(get_db),
 ):
     query = db.query(Product)
@@ -22,6 +24,7 @@ def list_products(
 @router.get("/{product_id}", response_model=ProductOut)
 def get_product(
     product_id: int,
+    _=Depends(require_roles("admin", "employee")),
     db: Session = Depends(get_db),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
@@ -33,6 +36,7 @@ def get_product(
 @router.post("", response_model=ProductOut)
 def create_product(
     payload: ProductCreate,
+    _=Depends(require_roles("admin")),
     db: Session = Depends(get_db),
 ):
     supplier = db.query(Supplier).filter(Supplier.id == payload.supplier_id).first()
@@ -50,6 +54,7 @@ def create_product(
 def update_product(
     product_id: int,
     payload: ProductUpdate,
+    _=Depends(require_roles("admin")),
     db: Session = Depends(get_db),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
@@ -71,6 +76,7 @@ def update_product(
 @router.delete("/{product_id}")
 def delete_product(
     product_id: int,
+    _=Depends(require_roles("admin")),
     db: Session = Depends(get_db),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()

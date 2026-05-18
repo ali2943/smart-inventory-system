@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from backend.database.connection import get_db
 from backend.models.entities import Product
 from backend.models.schemas import ProductOut, QuantityUpdate, StockAdjustment
+from backend.utils.auth import require_roles
 
 router = APIRouter(prefix="/api/inventory", tags=["Inventory"])
 
@@ -12,6 +13,7 @@ router = APIRouter(prefix="/api/inventory", tags=["Inventory"])
 def stock_in(
     product_id: int,
     payload: StockAdjustment,
+    _=Depends(require_roles("admin", "employee")),
     db: Session = Depends(get_db),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
@@ -27,6 +29,7 @@ def stock_in(
 def stock_out(
     product_id: int,
     payload: StockAdjustment,
+    _=Depends(require_roles("admin", "employee")),
     db: Session = Depends(get_db),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
@@ -44,6 +47,7 @@ def stock_out(
 def update_quantity(
     product_id: int,
     payload: QuantityUpdate,
+    _=Depends(require_roles("admin")),
     db: Session = Depends(get_db),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
@@ -58,6 +62,7 @@ def update_quantity(
 @router.get("/low-stock", response_model=list[ProductOut])
 def low_stock(
     threshold: int = 5,
+    _=Depends(require_roles("admin", "employee")),
     db: Session = Depends(get_db),
 ):
     return db.query(Product).filter(Product.quantity <= threshold).order_by(Product.quantity.asc()).all()

@@ -12,15 +12,21 @@
   <div class="row">
     <nav class="col-md-2 d-md-block sidebar py-3">
       <ul class="nav flex-column px-2">
-        <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
-        <li class="nav-item"><a class="nav-link active" href="suppliers.html">Suppliers</a></li>
-        <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="dashboard" href="dashboard.html">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="products" href="products.html">Products</a></li>
+        <li class="nav-item"><a class="nav-link active" data-nav="suppliers" href="suppliers.html">Sellers</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="sales" href="sales.html">Sales</a></li>
       </ul>
     </nav>
     <main class="col-md-10 ms-sm-auto px-md-4 py-4">
-      <h2 class="mb-3">Suppliers</h2>
-      <form id="supplierForm" class="row g-2 mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Sellers</h2>
+        <div class="d-flex align-items-center gap-2">
+          <span id="sessionUser" class="text-muted"></span>
+          <button class="btn btn-outline-dark btn-sm" onclick="logout()">Logout</button>
+        </div>
+      </div>
+      <form id="supplierForm" class="row g-2 mb-3" data-admin-only>
         <div class="col-md-3"><input id="supplier_name" class="form-control" placeholder="Name" required></div>
         <div class="col-md-2"><input id="phone" class="form-control" placeholder="Phone" required></div>
         <div class="col-md-3"><input id="email" type="email" class="form-control" placeholder="Email" required></div>
@@ -29,7 +35,7 @@
       </form>
       <div class="table-responsive">
         <table class="table table-striped">
-          <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Email</th><th>Address</th></tr></thead>
+          <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th data-admin-only>Actions</th></tr></thead>
           <tbody id="supplierRows"></tbody>
         </table>
       </div>
@@ -38,11 +44,49 @@
 </div>
 <script src="../js/api.js"></script>
 <script>
+  const session = setupPage("suppliers");
+
   async function loadSuppliers() {
     const suppliers = await apiRequest("/api/suppliers");
     document.getElementById("supplierRows").innerHTML = suppliers.map((s) => `
-      <tr><td>${s.id}</td><td>${s.supplier_name}</td><td>${s.phone}</td><td>${s.email}</td><td>${s.address}</td></tr>
+      <tr>
+        <td>${s.id}</td><td>${s.supplier_name}</td><td>${s.phone}</td><td>${s.email}</td><td>${s.address}</td>
+        ${session.role === "admin"
+          ? `<td>
+              <button class="btn btn-sm btn-outline-dark me-1" onclick="editSupplier(${s.id}, '${encodeURIComponent(s.supplier_name)}', '${encodeURIComponent(s.phone)}', '${encodeURIComponent(s.email)}', '${encodeURIComponent(s.address)}')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteSupplier(${s.id})">Delete</button>
+            </td>`
+          : ""}
+      </tr>
     `).join("");
+  }
+
+  async function editSupplier(id, supplierName, phoneValue, emailValue, addressValue) {
+    const nextName = prompt("Seller name", decodeURIComponent(supplierName));
+    if (!nextName) return;
+    const nextPhone = prompt("Phone", decodeURIComponent(phoneValue));
+    if (!nextPhone) return;
+    const nextEmail = prompt("Email", decodeURIComponent(emailValue));
+    if (!nextEmail) return;
+    const nextAddress = prompt("Address", decodeURIComponent(addressValue));
+    if (!nextAddress) return;
+
+    await apiRequest(`/api/suppliers/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        supplier_name: nextName,
+        phone: nextPhone,
+        email: nextEmail,
+        address: nextAddress,
+      }),
+    });
+    loadSuppliers().catch((err) => alert(err.message));
+  }
+
+  async function deleteSupplier(id) {
+    if (!confirm("Delete this seller?")) return;
+    await apiRequest(`/api/suppliers/${id}`, { method: "DELETE" });
+    loadSuppliers().catch((err) => alert(err.message));
   }
 
   document.getElementById("supplierForm").addEventListener("submit", async (e) => {

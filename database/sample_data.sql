@@ -1,8 +1,8 @@
 USE sims;
 
 INSERT INTO users (name, email, password, role) VALUES
-('Admin User', 'admin@sims.local', '$2b$12$V.X8vR8rIwx6Q3H8NzfVgeER2S9caM57Yf3PtlYhKtyu1ukI7IXwy', 'admin'),
-('Employee User', 'employee@sims.local', '$2b$12$V.X8vR8rIwx6Q3H8NzfVgeER2S9caM57Yf3PtlYhKtyu1ukI7IXwy', 'employee');
+('admin', 'admin', '$2b$12$V.X8vR8rIwx6Q3H8NzfVgeER2S9caM57Yf3PtlYhKtyu1ukI7IXwy', 'admin'),
+('employee', 'employee', '$2b$12$V.X8vR8rIwx6Q3H8NzfVgeER2S9caM57Yf3PtlYhKtyu1ukI7IXwy', 'employee');
 
 INSERT INTO suppliers (supplier_name, phone, email, address) VALUES
 ('FreshFoods Ltd', '1234567890', 'contact@freshfoods.com', '12 Market Street'),

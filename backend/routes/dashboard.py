@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from backend.database.connection import get_db
 from backend.models.entities import Product, Sale, Supplier
+from backend.utils.auth import require_roles
 
 router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 
@@ -11,6 +12,7 @@ router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 @router.get("/summary")
 def dashboard_summary(
     low_stock_threshold: int = 5,
+    _=Depends(require_roles("admin", "employee")),
     db: Session = Depends(get_db),
 ):
     total_products = db.query(func.count(Product.id)).scalar() or 0

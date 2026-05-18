@@ -4,18 +4,23 @@ from sqlalchemy.orm import Session
 from backend.database.connection import get_db
 from backend.models.entities import Product, Sale
 from backend.models.schemas import SaleCreate, SaleOut
+from backend.utils.auth import require_roles
 
 router = APIRouter(prefix="/api/sales", tags=["Sales"])
 
 
 @router.get("", response_model=list[SaleOut])
-def list_sales(db: Session = Depends(get_db)):
+def list_sales(
+    _=Depends(require_roles("admin", "employee")),
+    db: Session = Depends(get_db),
+):
     return db.query(Sale).order_by(Sale.created_at.desc()).all()
 
 
 @router.post("", response_model=SaleOut, status_code=status.HTTP_201_CREATED)
 def create_sale(
     payload: SaleCreate,
+    _=Depends(require_roles("admin", "employee")),
     db: Session = Depends(get_db),
 ):
     product = db.query(Product).filter(Product.id == payload.product_id).first()

@@ -12,20 +12,28 @@
   <div class="row">
     <nav class="col-md-2 d-md-block sidebar py-3">
       <ul class="nav flex-column px-2">
-        <li class="nav-item"><a class="nav-link active" href="dashboard.html">Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
-        <li class="nav-item"><a class="nav-link" href="suppliers.html">Suppliers</a></li>
-        <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+        <li class="nav-item"><a class="nav-link active" data-nav="dashboard" href="dashboard.html">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="products" href="products.html">Products</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="suppliers" href="suppliers.html">Sellers</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav="sales" href="sales.html">Sales</a></li>
       </ul>
     </nav>
     <main class="col-md-10 ms-sm-auto px-md-4 py-4">
-      <h2 class="mb-4">Dashboard</h2>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Dashboard</h2>
+        <div class="d-flex align-items-center gap-2">
+          <span id="sessionUser" class="text-muted"></span>
+          <button class="btn btn-outline-dark btn-sm" onclick="logout()">Logout</button>
+        </div>
+      </div>
       <div class="row g-3" id="cards"></div>
     </main>
   </div>
 </div>
 <script src="../js/api.js"></script>
 <script>
+  setupPage("dashboard");
+
   async function loadDashboard() {
     const data = await apiRequest("/api/dashboard/summary");
     const cards = [
