@@ -1,10 +1,15 @@
 # Smart Inventory Management System (SIMS)
 
-A simple full-stack inventory management system for small businesses built with FastAPI, MySQL, HTML, CSS, Bootstrap 5, and JavaScript.
+## Project Summary
 
-## Overview
+Smart Inventory Management System (SIMS) is a full-stack inventory application for small businesses. It provides a FastAPI backend, a MySQL database, and a Bootstrap-based frontend for managing users, suppliers, products, sales, and inventory movement.
 
-SIMS helps manage users, suppliers, products, inventory movement, and sales from a single web application. It includes role-based access for `admin` and `employee` users, with the backend exposed through a REST API and the frontend implemented with static HTML/CSS/JavaScript pages.
+## Tech Stack
+
+- **Backend:** Python, FastAPI
+- **Database:** MySQL
+- **Frontend:** HTML, CSS, JavaScript, Bootstrap 5
+- **Testing:** Python `unittest`
 
 ## Repository Structure
 
@@ -29,60 +34,104 @@ smart-inventory-system/
 └── README.md
 ```
 
-## Main Technologies
+## Key Features
 
-- **Backend:** Python, FastAPI
-- **Database:** MySQL
-- **Frontend:** HTML, CSS, JavaScript, Bootstrap 5
-- **Testing:** Python `unittest`
-
-## Core Features
-
-- User registration and login with `username` and `password`
+- User registration and login
 - Role-based access control for `admin` and `employee`
-- Dashboard summary data API
-- Product management with search and CRUD operations
-- Inventory stock in / stock out / quantity update
-- Low-stock alert endpoint
+- Product CRUD and search
 - Supplier management
 - Sales creation and sales history
+- Inventory stock-in, stock-out, and quantity updates
+- Low-stock alerts
+- Dashboard summary endpoint
 - Responsive frontend pages
 
-## Database Tables
+## Backend Architecture
 
-The database schema includes the following main tables:
+The backend starts from `backend/main.py`, where the FastAPI application is created, routers are included, CORS is enabled, and validation errors are converted into cleaner messages.
 
-- `users` — stores account information and user roles
-- `suppliers` — stores supplier/seller details
-- `products` — stores inventory items and links to suppliers
-- `sales` — stores sales transactions and total price values
+### Main backend entrypoint
 
-## Backend Setup
+```python
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
-1. Create and activate a Python virtual environment.
-2. Install dependencies:
-
-```bash
-pip install -r requirements.txt
+from backend.database.connection import engine
+from backend.models.base import Base
+from backend.models import entities  # noqa: F401
+from backend.routes import auth, dashboard, inventory, products, sales, suppliers
 ```
 
-3. Set the database connection string:
+The application also creates database tables on startup:
 
-```bash
-export DATABASE_URL='mysql+pymysql://root:password@localhost:3306/sims'
+```python
+Base.metadata.create_all(bind=engine)
 ```
 
-4. Create the database and sample tables/data:
+And exposes a simple health check:
 
-```bash
-mysql -u root -p < database/schema.sql
-mysql -u root -p < database/sample_data.sql
+```python
+@app.get("/")
+def health_check():
+    return {"message": "SIMS API is running"}
 ```
 
-5. Start the API server:
+## Database Design
 
-```bash
-uvicorn backend.main:app --reload
+The SQL schema defines four main tables:
+
+- `users`
+- `suppliers`
+- `products`
+- `sales`
+
+### Schema summary
+
+```sql
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'employee') NOT NULL DEFAULT 'employee'
+);
+```
+
+```sql
+CREATE TABLE IF NOT EXISTS suppliers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    supplier_name VARCHAR(120) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    address VARCHAR(255) NOT NULL
+);
+```
+
+```sql
+CREATE TABLE IF NOT EXISTS products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    quantity INT NOT NULL DEFAULT 0,
+    price DECIMAL(10,2) NOT NULL,
+    supplier_id INT NOT NULL,
+    CONSTRAINT fk_products_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
+      ON DELETE RESTRICT ON UPDATE CASCADE
+);
+```
+
+```sql
+CREATE TABLE IF NOT EXISTS sales (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    total_price DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_sales_product FOREIGN KEY (product_id) REFERENCES products(id)
+      ON DELETE RESTRICT ON UPDATE CASCADE
+);
 ```
 
 ## API Endpoints
@@ -125,9 +174,7 @@ uvicorn backend.main:app --reload
 
 ## Frontend Pages
 
-Open the files inside `frontend/pages` in a browser or serve them through a static file server.
-
-Available pages include:
+The `frontend/pages` directory contains the static user interface pages:
 
 - `login.html`
 - `dashboard.html`
@@ -136,32 +183,107 @@ Available pages include:
 - `suppliers.html`
 - `sales.html`
 
-If the backend URL changes, update the API base URL in `frontend/js/api.js`.
+The frontend communicates with the backend using the API base configured in `frontend/js/api.js`.
+
+## Installation and Setup
+
+### 1. Create a virtual environment
+
+```bash
+python -m venv .venv
+```
+
+Activate it:
+
+- **Windows:** `.
+  .venv\Scripts\activate`
+- **macOS/Linux:** `source .venv/bin/activate`
+
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configure the database connection
+
+```bash
+export DATABASE_URL='mysql+pymysql://root:password@localhost:3306/sims'
+```
+
+### 4. Initialize the database
+
+```bash
+mysql -u root -p < database/schema.sql
+mysql -u root -p < database/sample_data.sql
+```
+
+### 5. Run the backend server
+
+```bash
+uvicorn backend.main:app --reload
+```
 
 ## Testing
 
-Run the built-in test suite with:
+The project includes automated tests in `tests/test_api.py`.
+
+### Run tests
 
 ```bash
 python -m unittest tests/test_api.py
 ```
 
-## Testing Highlights
+## Test Coverage Summary
 
-The test suite currently checks:
+The tests currently cover:
 
-- supplier and product creation flow
-- sales creation and inventory quantity updates
-- login response behavior
-- access control for employee users
+- admin and employee registration setup
+- supplier creation and product creation flow
+- sales creation and inventory quantity reduction
+- login response structure
+- employee permission restrictions
+- missing supplier error handling
 - validation error formatting
-- missing supplier handling when creating a product
 
-## Notes
+### Example test scenarios
 
-- The API uses HTTP Basic authentication for protected endpoints.
-- Validation errors are converted into human-readable messages.
-- The root endpoint `GET /` returns a simple health message.
+#### 1. Supplier, product, and sale flow
+
+- create a supplier as admin
+- create a product linked to that supplier
+- create a sale as employee
+- verify the sale total price
+- verify product quantity is updated
+
+#### 2. Access control checks
+
+- employee users are blocked from creating products
+- employee users are blocked from creating suppliers
+
+#### 3. Validation checks
+
+- invalid product input returns a readable `422` response
+
+#### 4. Error handling checks
+
+- creating a product with a missing supplier returns `404 Supplier not found`
+
+## Notes on Authentication
+
+Protected endpoints require HTTP Basic authentication headers for a registered user.
+
+## Health Check
+
+You can confirm the API is running by visiting:
+
+- `GET /`
+
+Expected response:
+
+```json
+{"message": "SIMS API is running"}
+```
 
 ## License
 
